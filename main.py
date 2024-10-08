@@ -41,6 +41,7 @@ COLORS = {
 
 PIECES = { #x,y
     1:((-1,0),(0,0),(1,0),(2,0)), #I
+    #1:((-1,-1),(0,-1),(1,-1),(2,-1)), #I to test too much up
     2:((0,0),(0,1),(1,0),(1,1)), #O
     3:((0,0),(0,1),(1,0),(-1,1)), #S
     4:((0,0),(0,1),(-1,0),(1,1)), #Z
@@ -52,13 +53,14 @@ PIECES = { #x,y
 NPIECES = tuple(PIECES.keys())
 SCREEN_COLOR = "darkgray"
 CUBE_SIZE = 30
-GRID_CUBE_SIZE = (10,20) #x,y
+GRID_CUBE_SIZE = (10,4) #x,y
 GRID_COLOR = "black"
 CUBES_LIMIT_COLOR = "white"
 GRID_POS = (0,0) #x,y
 NUMBER_NEXT_PIECES = 3
 DELAY_CONTROL_H = 0.1 # to go left or right
 DELAY_CONTROL_V = 0.1 # to go down
+
 
 def flip_coords(x,y):
     """convert UI coords to numpy coords"""
@@ -78,19 +80,33 @@ def setup_current_piece():
     cpiece_id = next_pieces.pop(0)
     next_pieces.append(random.choice(NPIECES))
     cpiece_pos = [int(GRID_CUBE_SIZE[0])//2, 0] #x,y
-    cpiece_cubes = PIECES[cpiece_id]
-    add_cpiece_to_grid()
+    cpiece_cubes = PIECES[cpiece_id]  
+    print("w")  
+    while True:
+        
+        r=add_cpiece_to_grid()
+        print(r)
+        if r==-1:# too much up
+            cpiece_pos[1]+=1
+        elif r: #successful
+            return 
+            
+        else: # game over - conflicts (or too much down ?)
+            print("game over")
+            
 
 def add_cpiece_to_grid():
     global cubes_w_cpiece
     grid_w_cpiece_cache = grid.copy()
     for cube in cpiece_cubes:
         cube_pos = cpiece_pos[0]+cube[0], cpiece_pos[1]+cube[1]
+        if cube_pos[0]<0: # too much up
+            return -1
         if not (0<=cube_pos[0]<GRID_CUBE_SIZE[0] and 0<=cube_pos[1]<GRID_CUBE_SIZE[1]): # verif if it cross limits
             return False
         # if not 0<=cube_pos[0]<10:
         #     cpiece_pos[0] -= moving_h #cancel the move
-        if grid_w_cpiece_cache[flip_coords(*cube_pos)]: # verif for conflicts
+        if grid_w_cpiece_cache[flip_coords(*cube_pos)]: # conflicts ?
             return False
         grid_w_cpiece_cache[flip_coords(*cube_pos)] = cpiece_id
     cubes_w_cpiece = grid_w_cpiece_cache
@@ -138,7 +154,7 @@ running = True
 next_pieces = [random.choice(NPIECES) for _ in range(NUMBER_NEXT_PIECES)]
 if 1:
     pass
-    #next_pieces[0] = 7
+    #next_pieces[0] = 1
     
 setup_current_piece()
 
