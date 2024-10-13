@@ -53,7 +53,7 @@ PIECES = { #x,y
 NPIECES = tuple(PIECES.keys())
 SCREEN_COLOR = "darkgray"
 CUBE_SIZE = 30
-GRID_CUBE_SIZE = (10,4) #x,y
+GRID_CUBE_SIZE = (10,20) #x,y
 GRID_COLOR = "black"
 CUBES_LIMIT_COLOR = "white"
 GRID_POS = (0,0) #x,y
@@ -85,7 +85,7 @@ def setup_current_piece():
     while True:
         
         r=add_cpiece_to_grid()
-        print(r)
+        #print(r)
         if r==-1:# too much up
             cpiece_pos[1]+=1
         elif r: #successful
