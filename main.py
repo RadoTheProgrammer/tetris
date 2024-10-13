@@ -27,6 +27,7 @@ import pygame
 import numpy as np
 import random
 import time
+import sys
 
 SCREEN_SIZE = (1280, 720)
 COLORS = {
@@ -60,7 +61,8 @@ GRID_POS = (0,0) #x,y
 NUMBER_NEXT_PIECES = 3
 DELAY_CONTROL_H = 0.1 # to go left or right
 DELAY_CONTROL_V = 0.1 # to go down
-
+debug_mode = hasattr(sys, 'gettrace') and sys.gettrace()
+printd = print if debug_mode else lambda *x, **y:None
 
 def flip_coords(x,y):
     """convert UI coords to numpy coords"""
@@ -81,7 +83,7 @@ def setup_current_piece():
     next_pieces.append(random.choice(NPIECES))
     cpiece_pos = [int(GRID_CUBE_SIZE[0])//2, 0] #x,y
     cpiece_cubes = PIECES[cpiece_id]  
-    print("w")  
+    #print("w")  
     while True:
         
         r=add_cpiece_to_grid()
@@ -100,8 +102,10 @@ def add_cpiece_to_grid():
     grid_w_cpiece_cache = grid.copy()
     for cube in cpiece_cubes:
         cube_pos = cpiece_pos[0]+cube[0], cpiece_pos[1]+cube[1]
-        if cube_pos[0]<0: # too much up
+        if cube_pos[1]<0: # too much up
             return -1
+        printd("condition", 0<=cube_pos[0])
+        printd("hello", cube_pos[0])
         if not (0<=cube_pos[0]<GRID_CUBE_SIZE[0] and 0<=cube_pos[1]<GRID_CUBE_SIZE[1]): # verif if it cross limits
             return False
         # if not 0<=cube_pos[0]<10:
@@ -195,12 +199,14 @@ while running:
     if moving_h and time.time() > next_time_moving_h:
         next_time_moving_h += DELAY_CONTROL_H
         cpiece_pos[0] += moving_h
+        printd(cpiece_pos)
         if not add_cpiece_to_grid():
             cpiece_pos[0] -= moving_h # cancel the h move
+            print("hello2")
             moving_h = 0
         
     if moving_v and time.time() > next_time_moving_v:
-        print(next_time_moving_v)
+        printd(next_time_moving_v)
         next_time_moving_v += DELAY_CONTROL_V
         #cpiece_pos[1] += moving_v
         move_v(moving_v)
@@ -222,7 +228,7 @@ while running:
         #     1)
 
     for event in pygame.event.get():
-        print(event)
+        #printd(event)
         if event.type == pygame.QUIT:
             running=False
             
