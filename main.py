@@ -154,6 +154,9 @@ pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
 
+pygame.mixer.init()
+pygame.mixer.music.load("music.mp3")
+pygame.mixer.music.play(loops=-1)
 running = True
 next_pieces = [random.choice(NPIECES) for _ in range(NUMBER_NEXT_PIECES)]
 if 1:
@@ -258,4 +261,5 @@ while running:
     clock.tick(60) # fps
     pygame.display.flip()
             
+pygame.mixer.music.stop()
 pygame.quit()
