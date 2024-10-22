@@ -67,8 +67,8 @@ printd = print if debug_mode else lambda *x, **y:None
 def flip_coords(x,y):
     """convert UI coords to numpy coords"""
     return y,x
-def setup_current_piece():
-    global cpiece_id, cpiece_pos, cpiece_cubes, grid
+def setup_current_piece(setup_cpiece_id=True):
+    global cpiece_id, cpiece_pos, cpiece_cubes, grid, holded_used
     
     #remove full lines
     for nline in range(GRID_CUBE_SIZE[1]):
@@ -78,11 +78,13 @@ def setup_current_piece():
             grid = np.vstack((empty_line, grid))
             #print(grid)
             pass
-        
-    cpiece_id = next_pieces.pop(0)
-    next_pieces.append(random.choice(NPIECES))
+    if setup_cpiece_id:
+        cpiece_id = next_pieces.pop(0)
+        next_pieces.append(random.choice(NPIECES))
+        holded_used = False
     cpiece_pos = [int(GRID_CUBE_SIZE[0])//2, 0] #x,y
     cpiece_cubes = PIECES[cpiece_id]  
+    holded_used = False
     #print("w")  
     while True:
         
@@ -95,7 +97,7 @@ def setup_current_piece():
             
         else: # game over - conflicts (or too much down ?)
             print("game over")
-            
+    
 
 def add_cpiece_to_grid():
     global cubes_w_cpiece
@@ -173,6 +175,7 @@ next_time_moving_v = 0
 moving_h = 0
 moving_v = 0
 next_time_moving += delay_moving
+holded_piece = 0
 #adjust_cpiece_pos()
 # Create grid_surface
 grid_surface = pygame.Surface((GRID_CUBE_SIZE[0]*CUBE_SIZE, GRID_CUBE_SIZE[1]*CUBE_SIZE))
@@ -251,7 +254,15 @@ while running:
                 if not add_cpiece_to_grid():
                     cpiece_cubes = cpiece_cubes_backup
                 pass
-
+            elif event.unicode == "c":
+                if not holded_used:
+                    if holded_piece:
+                        cpiece_id, holded_piece = holded_piece, cpiece_id
+                        setup_current_piece(setup_cpiece_id=False)
+                    else:
+                        holded_piece = cpiece_id
+                        setup_current_piece()
+                    holded_used = True
         elif event.type == pygame.KEYUP:
             if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                 moving_h = 0
