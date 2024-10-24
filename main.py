@@ -23,11 +23,13 @@ don't worry if it's not like the original, it would be even better !
 """
 
 
+from re import S
 import pygame
 import numpy as np
 import random
 import time
 import sys
+
 
 SCREEN_SIZE = (1280, 720)
 COLORS = {
@@ -69,6 +71,7 @@ CLEAR_LINES_POINTS = {
     4:800
 }
 LINES_CLEARED_BY_LEVEL = 10
+
 debug_mode = hasattr(sys, 'gettrace') and sys.gettrace()
 #print(sys.gettrace())
 printd = print if debug_mode else lambda *x, **y:None
@@ -183,6 +186,7 @@ for piece_id, color in COLORS.items():
     cube_surfaces[piece_id] = cube_surface
     
 pygame.init()
+
 screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
 
@@ -204,6 +208,7 @@ moving_v = 0
 holded_piece = 0
 lines_cleared_total = 0
 level_old = 0
+
 new_piece()
 next_time_moving += speed_moving
 #adjust_cpiece_pos()
@@ -303,6 +308,20 @@ while running:
                 cube_surface = cube_surfaces[piece_id]
                 screen.blit(cube_surface, (CUBE_SIZE*x+GRID_POS[0], CUBE_SIZE*y+GRID_POS[1]))
                 
+    score_text = f"Score: {score}"
+    score_surface = pygame.font.Font(None, 24).render(score_text, True, "white")
+    score_rect = score_surface.get_rect(topleft=(CUBE_SIZE*GRID_CUBE_SIZE[0],0))
+    screen.blit(score_surface, score_rect)
+    
+    level_text = f"Level: {level}"
+    level_surface = pygame.font.Font(None, 24).render(level_text, True, "white")
+    level_rect = level_surface.get_rect(topleft=(CUBE_SIZE*GRID_CUBE_SIZE[0],50))
+    screen.blit(level_surface, level_rect)
+    
+    lines_surface = pygame.font.Font(None, 24).render(f"Lines cleared: {lines_cleared_total}", True, "white")
+    lines_rect = lines_surface.get_rect(topleft=(CUBE_SIZE*GRID_CUBE_SIZE[0],100))
+    screen.blit(lines_surface, lines_rect)
+    
     clock.tick(60) # fps
     printd("score",score,"level",level,"lines cleared total",lines_cleared_total, "speed moving",speed_moving)
     #print("showed?")
