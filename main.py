@@ -61,6 +61,13 @@ GRID_POS = (0,0) #x,y
 NUMBER_NEXT_PIECES = 3
 DELAY_CONTROL_H = 0.1 # to go left or right
 DELAY_CONTROL_V = 0.1 # to go down
+CLEAR_LINES_POINTS = {
+    0: 0,
+    1:100,
+    2:300,
+    3:500,
+    4:800
+}
 debug_mode = hasattr(sys, 'gettrace') and sys.gettrace()
 printd = print if debug_mode else lambda *x, **y:None
 
@@ -68,16 +75,19 @@ def flip_coords(x,y):
     """convert UI coords to numpy coords"""
     return y,x
 def setup_current_piece(setup_cpiece_id=True):
-    global cpiece_id, cpiece_pos, cpiece_cubes, grid, holded_used
+    global cpiece_id, cpiece_pos, cpiece_cubes, grid, holded_used, score
     
-    #remove full lines
+    #clear lines
+    n_of_cleared_lines = 0
     for nline in range(GRID_CUBE_SIZE[1]):
         if np.all(grid[nline]):
             grid = np.delete(grid,nline,axis=0)
             #print(cubes)
             grid = np.vstack((empty_line, grid))
+            n_of_cleared_lines += 1
             #print(grid)
             pass
+    score += CLEAR_LINES_POINTS[n_of_cleared_lines]
     if setup_cpiece_id:
         cpiece_id = next_pieces.pop(0)
         next_pieces.append(random.choice(NPIECES))
@@ -164,7 +174,7 @@ next_pieces = [random.choice(NPIECES) for _ in range(NUMBER_NEXT_PIECES)]
 if 1:
     pass
     #next_pieces[0] = 1
-    
+score = 0
 setup_current_piece()
 
 empty_line = np.zeros((1,GRID_CUBE_SIZE[0]))
@@ -176,6 +186,7 @@ moving_h = 0
 moving_v = 0
 next_time_moving += delay_moving
 holded_piece = 0
+
 #adjust_cpiece_pos()
 # Create grid_surface
 grid_surface = pygame.Surface((GRID_CUBE_SIZE[0]*CUBE_SIZE, GRID_CUBE_SIZE[1]*CUBE_SIZE))
@@ -208,14 +219,15 @@ while running:
         printd(cpiece_pos)
         if not add_cpiece_to_grid():
             cpiece_pos[0] -= moving_h # cancel the h move
-            print("hello2")
+            #print("hello2")
             moving_h = 0
         
-    if moving_v and time.time() > next_time_moving_v:
+    if moving_v and time.time() > next_time_moving_v: # soft drop
         printd(next_time_moving_v)
         next_time_moving_v += DELAY_CONTROL_V
         #cpiece_pos[1] += moving_v
         move_v(moving_v)
+        score += moving_v
         
 
         
