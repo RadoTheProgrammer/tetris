@@ -68,6 +68,7 @@ CLEAR_LINES_POINTS = {
     3:500,
     4:800
 }
+LINES_CLEARED_BY_LEVEL = 10
 debug_mode = hasattr(sys, 'gettrace') and sys.gettrace()
 #print(sys.gettrace())
 printd = print if debug_mode else lambda *x, **y:None
@@ -75,20 +76,38 @@ printd = print if debug_mode else lambda *x, **y:None
 def flip_coords(x,y):
     """convert UI coords to numpy coords"""
     return y,x
-def setup_current_piece(setup_cpiece_id=True):
-    global cpiece_id, cpiece_pos, cpiece_cubes, grid, holded_used, score
+
+def update_speed_moving():
+    global speed_moving
+    if level<=10:
+        speed_moving = 1-0.1*(level-1)
+    else:
+        speed_moving = 0.05
+    #speed_moving = 0.5
+    
+def new_piece(setup_cpiece_id=True):
+    global cpiece_id, cpiece_pos, cpiece_cubes, grid, holded_used, score, lines_cleared_total, level, level_old
     
     #clear lines
-    n_of_cleared_lines = 0
+    lines_cleared_piece = 0
     for nline in range(GRID_CUBE_SIZE[1]):
         if np.all(grid[nline]):
             grid = np.delete(grid,nline,axis=0)
             #print(cubes)
             grid = np.vstack((empty_line, grid))
-            n_of_cleared_lines += 1
+            lines_cleared_piece += 1
             #print(grid)
             pass
-    score += CLEAR_LINES_POINTS[n_of_cleared_lines]
+    
+    #lines_cleared_level+=lines_cleared_piece
+    lines_cleared_total+=lines_cleared_piece
+    level = lines_cleared_total//LINES_CLEARED_BY_LEVEL + 1
+    if level != level_old: # that means level up
+        level_old = level
+        printd("LEVEL UP")
+        update_speed_moving()
+    score += CLEAR_LINES_POINTS[lines_cleared_piece]
+    
     if setup_cpiece_id:
         cpiece_id = next_pieces.pop(0)
         next_pieces.append(random.choice(NPIECES))
@@ -140,7 +159,7 @@ def move_v(delta_v):
         grid = cubes_w_cpiece
         
         #remove lines !
-        setup_current_piece()
+        new_piece()
 
 # def adjust_cpiece_pos():
 #     global cpiece_pos
@@ -176,18 +195,17 @@ if 1:
     pass
     #next_pieces[0] = 1
 score = 0
-setup_current_piece()
-
 empty_line = np.zeros((1,GRID_CUBE_SIZE[0]))
-delay_moving = 1
 next_time_moving = time.time()
 next_time_moving_h = 0
 next_time_moving_v = 0
 moving_h = 0
 moving_v = 0
-next_time_moving += delay_moving
 holded_piece = 0
-
+lines_cleared_total = 0
+level_old = 0
+new_piece()
+next_time_moving += speed_moving
 #adjust_cpiece_pos()
 # Create grid_surface
 grid_surface = pygame.Surface((GRID_CUBE_SIZE[0]*CUBE_SIZE, GRID_CUBE_SIZE[1]*CUBE_SIZE))
@@ -244,10 +262,10 @@ while running:
                 if not holded_used:
                     if holded_piece:
                         cpiece_id, holded_piece = holded_piece, cpiece_id
-                        setup_current_piece(setup_cpiece_id=False)
+                        new_piece(setup_cpiece_id=False)
                     else:
                         holded_piece = cpiece_id
-                        setup_current_piece()
+                        new_piece()
                     holded_used = True
         elif event.type == pygame.KEYUP:
             if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
@@ -257,7 +275,7 @@ while running:
                 moving_v = 0
 
     if time.time() > next_time_moving:
-        next_time_moving += delay_moving
+        next_time_moving += speed_moving
         move_v(1)
         
     if moving_h and time.time() > next_time_moving_h:
@@ -286,7 +304,7 @@ while running:
                 screen.blit(cube_surface, (CUBE_SIZE*x+GRID_POS[0], CUBE_SIZE*y+GRID_POS[1]))
                 
     clock.tick(60) # fps
-    printd(score)
+    printd("score",score,"level",level,"lines cleared total",lines_cleared_total, "speed moving",speed_moving)
     #print("showed?")
     pygame.display.flip()
             
