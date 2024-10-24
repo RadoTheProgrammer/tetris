@@ -69,6 +69,7 @@ CLEAR_LINES_POINTS = {
     4:800
 }
 debug_mode = hasattr(sys, 'gettrace') and sys.gettrace()
+#print(sys.gettrace())
 printd = print if debug_mode else lambda *x, **y:None
 
 def flip_coords(x,y):
@@ -285,6 +286,8 @@ while running:
                 screen.blit(cube_surface, (CUBE_SIZE*x+GRID_POS[0], CUBE_SIZE*y+GRID_POS[1]))
                 
     clock.tick(60) # fps
+    printd(score)
+    #print("showed?")
     pygame.display.flip()
             
 pygame.mixer.music.stop()
