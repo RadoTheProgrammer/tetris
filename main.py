@@ -209,34 +209,7 @@ while running:
     screen.fill(SCREEN_COLOR)
     screen.blit(grid_surface,GRID_POS)
 
-    if time.time() > next_time_moving:
-        next_time_moving += delay_moving
-        move_v(1)
-        
-    if moving_h and time.time() > next_time_moving_h:
-        next_time_moving_h += DELAY_CONTROL_H
-        cpiece_pos[0] += moving_h
-        printd(cpiece_pos)
-        if not add_cpiece_to_grid():
-            cpiece_pos[0] -= moving_h # cancel the h move
-            #print("hello2")
-            moving_h = 0
-        
-    if moving_v and time.time() > next_time_moving_v: # soft drop
-        printd(next_time_moving_v)
-        next_time_moving_v += DELAY_CONTROL_V
-        #cpiece_pos[1] += moving_v
-        move_v(moving_v)
-        score += moving_v
-        
 
-        
-    for y in range(GRID_CUBE_SIZE[1]):
-        for x in range(GRID_CUBE_SIZE[0]):
-            piece_id = cubes_w_cpiece[flip_coords(x,y)]
-            if piece_id != 0:
-                cube_surface = cube_surfaces[piece_id]
-                screen.blit(cube_surface, (CUBE_SIZE*x+GRID_POS[0], CUBE_SIZE*y+GRID_POS[1]))
         
         # pygame.draw.line(
         #     screen, 
@@ -281,6 +254,36 @@ while running:
                 
             elif event.key == pygame.K_DOWN:
                 moving_v = 0
+
+    if time.time() > next_time_moving:
+        next_time_moving += delay_moving
+        move_v(1)
+        
+    if moving_h and time.time() > next_time_moving_h:
+        next_time_moving_h += DELAY_CONTROL_H
+        cpiece_pos[0] += moving_h
+        printd(cpiece_pos)
+        if not add_cpiece_to_grid():
+            cpiece_pos[0] -= moving_h # cancel the h move
+            #print("hello2")
+            moving_h = 0
+        
+    if moving_v and time.time() > next_time_moving_v: # soft drop
+        printd(next_time_moving_v)
+        next_time_moving_v += DELAY_CONTROL_V
+        #cpiece_pos[1] += moving_v
+        move_v(moving_v)
+        score += moving_v
+        
+
+        
+    for y in range(GRID_CUBE_SIZE[1]):
+        for x in range(GRID_CUBE_SIZE[0]):
+            piece_id = cubes_w_cpiece[flip_coords(x,y)]
+            if piece_id != 0:
+                cube_surface = cube_surfaces[piece_id]
+                screen.blit(cube_surface, (CUBE_SIZE*x+GRID_POS[0], CUBE_SIZE*y+GRID_POS[1]))
+                
     clock.tick(60) # fps
     pygame.display.flip()
             
