@@ -23,7 +23,7 @@ don't worry if it's not like the original, it would be even better !
 """
 
 
-from re import S
+
 import pygame
 import numpy as np
 import random
@@ -31,7 +31,7 @@ import time
 import sys
 
 
-SCREEN_SIZE = (1280, 720)
+
 COLORS = {
     1:"blue", 
     2:"red", 
@@ -180,14 +180,32 @@ def move_v(delta_v):
 grid = np.zeros(flip_coords(*GRID_CUBE_SIZE))
 #cubes = array = np.random.randint(0, 5, size=GRID_CUBE_SIZE)
 cube_surfaces = {}
+pieces_surfaces = {}
 for piece_id, color in COLORS.items():
     cube_surface = pygame.Surface((CUBE_SIZE, CUBE_SIZE))
     cube_surface.fill(color)
     cube_surfaces[piece_id] = cube_surface
     
+    piece_cubes = PIECES[piece_id]
+    xs, ys = zip(*piece_cubes)
+    min_x, min_y = min(xs), min(ys)
+    x_dim, y_dim = max(xs)-min_x+1, max(ys)-min_y+1
+    piece_cubes = tuple((x-min_x,y-min_y) for x,y in piece_cubes)
+    pass
+    piece_size = (CUBE_SIZE*x_dim, CUBE_SIZE*y_dim)
+    piece_surface = pygame.Surface(piece_size,pygame.SRCALPHA)
+    piece_surface.fill((0,0,0,0))
+    
+    for cube in piece_cubes:
+        piece_surface.blit(cube_surface, (cube[0]*CUBE_SIZE, cube[1]*CUBE_SIZE))
+    pieces_surfaces[piece_id] = piece_surface
+    
+        
+    
+
 pygame.init()
 
-screen = pygame.display.set_mode(SCREEN_SIZE)
+screen = pygame.display.set_mode((GRID_CUBE_SIZE[0]*CUBE_SIZE+100,GRID_CUBE_SIZE[1]*CUBE_SIZE))
 clock = pygame.time.Clock()
 
 pygame.mixer.init()
@@ -232,6 +250,7 @@ for x in range(GRID_CUBE_SIZE[0]):
 while running:
     screen.fill(SCREEN_COLOR)
     screen.blit(grid_surface,GRID_POS)
+    
 
 
         
@@ -322,10 +341,16 @@ while running:
     lines_rect = lines_surface.get_rect(topleft=(CUBE_SIZE*GRID_CUBE_SIZE[0],100))
     screen.blit(lines_surface, lines_rect)
     
+    screen.blit(pieces_surfaces[2],(0,0))
+    # SHOW NEXT PIECES
+    # for piece in next_pieces:
+    #     piece_surface = 
     clock.tick(60) # fps
-    printd("score",score,"level",level,"lines cleared total",lines_cleared_total, "speed moving",speed_moving)
+    printd(next_pieces)
+    #printd("score",score,"level",level,"lines cleared total",lines_cleared_total, "speed moving",speed_moving)
     #print("showed?")
     pygame.display.flip()
+    
             
 pygame.mixer.music.stop()
 pygame.quit()
