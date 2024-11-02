@@ -142,14 +142,15 @@ def new_piece(setup_cpiece_id=True):
     #print("w")  
     while True:
         
-        r=add_cpiece_to_grid()
+
+        try: 
         #print(r)
-        if r==-1:# too much up
-            cpiece_pos[1]+=1
-        elif r: #successful
-            return 
-            
-        else: # game over - conflicts (or too much down ?)
+            if add_cpiece_to_grid(): # successful
+                return
+            else: # conflicts or piece too much up, re-check for up
+                cpiece_pos[1]+=1
+
+        except IndexError: # game over, verified until piece down
             print("game over")
     
 
@@ -158,8 +159,7 @@ def add_cpiece_to_grid():
     grid_w_cpiece_cache = grid.copy()
     for cube in cpiece_cubes:
         cube_pos = cpiece_pos[0]+cube[0], cpiece_pos[1]+cube[1]
-        if cube_pos[1]<0: # too much up
-            return -1
+
         printd("condition", 0<=cube_pos[0])
         printd("hello", cube_pos[0])
         if not (0<=cube_pos[0]<GRID_CUBE_SIZE[0] and 0<=cube_pos[1]<GRID_CUBE_SIZE[1]): # verif if it cross limits
@@ -184,6 +184,7 @@ def move_v(delta_v):
         
         #remove lines !
         new_piece()
+        return True
 
 # def adjust_cpiece_pos():
 #     global cpiece_pos
@@ -312,6 +313,10 @@ while running:
                         holded_piece = cpiece_id
                         new_piece()
                     holded_used = True
+            elif event.unicode == " ": # hard drop
+                while not move_v(1):
+                    score += 2
+                    
         elif event.type == pygame.KEYUP:
             if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                 moving_h = 0
