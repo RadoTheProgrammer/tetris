@@ -54,15 +54,9 @@ PIECES = { #x,y
     #6:((0,0),(0,1),(-1,1))
 }
 NPIECES = tuple(PIECES.keys())
-
-# design
-SCREEN_COLOR = "darkgray"
-CUBE_SIZE = 30
 GRID_CUBE_SIZE = (10,20) #x,y
-GRID_COLOR = "black"
-CUBES_LIMIT_COLOR = "white"
-GRID_POS = (CUBE_SIZE*4+20,0) #x,y
 NUMBER_NEXT_PIECES = 3
+
 DELAY_CONTROL_H = 0.1 # to go left or right
 DELAY_CONTROL_V = 0.1 # to go down
 CLEAR_LINES_POINTS = {
@@ -72,14 +66,37 @@ CLEAR_LINES_POINTS = {
     3:500,
     4:800
 }
-SCORE_FONT=pygame.font.Font(None, 24)
-HOLD_FONT=pygame.font.Font(None, 24)
 LINES_CLEARED_BY_LEVEL = 10
-X_GRID_RIGHT = GRID_CUBE_SIZE[0]*CUBE_SIZE+GRID_POS[0]
+
+# DESIGN SETTINGS
+CUBE_SIZE = 30
+GRID_POS = (CUBE_SIZE*4+20,0)
+NEXT_POS=(GRID_CUBE_SIZE[0]*CUBE_SIZE+GRID_POS[0]+10, 10)
+NEXT_BETWEEN_TEXT_PIECES=20
+NEXT_BETWEEN_PIECES=20
+HOLD_POS = (10,10)
+HOLD_SPACE_TEXT_PIECES=20
+HOLD_SPACE_PIECES=20
+SCREEN_SIZE = ((GRID_CUBE_SIZE[0]+8)*CUBE_SIZE+40,GRID_CUBE_SIZE[1]*CUBE_SIZE)
+SCORE_POS = (10,SCREEN_SIZE[1]-10)
+SCORE_SPACE_PIECES=20
+
+SCREEN_COLOR = "darkgray"
+GRID_COLOR = "black"
+CUBES_LIMIT_COLOR = "white"
+NEXT_STYLE=pygame.font.Font(None, 24),True,"white"
+SCORE_STYLE=pygame.font.Font(None, 24),True,"white"
+HOLD_STYLE=pygame.font.Font(None, 24),True,"white"
+
+
+
+##
+
 debug_mode = hasattr(sys, 'gettrace') and sys.gettrace()
 #print(sys.gettrace())
 printd = print if debug_mode else lambda *x, **y:None
-
+def render(style,text):
+    return style[0].render(text, *style[1:])
 def flip_coords(x,y):
     """convert UI coords to numpy coords"""
     return y,x
@@ -208,8 +225,8 @@ for piece_id, color in COLORS.items():
     
 
 
-screen_size = ((GRID_CUBE_SIZE[0]+8)*CUBE_SIZE+40,GRID_CUBE_SIZE[1]*CUBE_SIZE)
-screen = pygame.display.set_mode(screen_size)
+
+screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
 
 pygame.mixer.init()
@@ -330,34 +347,37 @@ while running:
             if piece_id != 0:
                 cube_surface = cube_surfaces[piece_id]
                 screen.blit(cube_surface, (CUBE_SIZE*x+GRID_POS[0], CUBE_SIZE*y+GRID_POS[1]))
-                
-    surface_next = pygame.font.Font(None,24).render("Next",True,"white")
-    y=10
-    screen.blit(surface_next,(X_GRID_RIGHT+10,y))
-    y+=surface_next.get_height()+20
+    
+    # DESIGN
+    surface_next = render(NEXT_STYLE,"Next")
+    y=NEXT_POS[1]
+    screen.blit(surface_next,NEXT_POS)
+    y+=surface_next.get_height()+NEXT_BETWEEN_TEXT_PIECES
+    
     for next_piece in next_pieces:
         piece_surface=pieces_surfaces[next_piece]
-        screen.blit(piece_surface, (X_GRID_RIGHT+10,y))
-        y+=piece_surface.get_height()+20
+        screen.blit(piece_surface, (NEXT_POS[0],y))
+        y+=CUBE_SIZE*2+NEXT_BETWEEN_PIECES
         
-    surface_hold = HOLD_FONT.render("Hold",True,"white")
-    y=10
-    screen.blit(surface_hold, (10,y))
+    surface_hold = render(SCORE_STYLE,"Hold")
+    y=HOLD_POS[1]
+    screen.blit(surface_hold, HOLD_POS)
     if holded_piece:
-        y+=surface_hold.get_height()+20
+        y+=surface_hold.get_height()+HOLD_SPACE_TEXT_PIECES
         piece_surface=pieces_surfaces[holded_piece]
         screen.blit(piece_surface,(10,y))
-        y+=piece_surface.get_height()+20
+        
     
-    y=screen_size[1]-10
+    y=SCORE_POS[1]
+    printd(y)
     for text in (
         f"Level: {level}",
         f"Lines: {lines}",
         f"Score: {score}",
     ):
-        surface = SCORE_FONT.render(text,True,"white")
-        screen.blit(surface, surface.get_rect(bottomleft=(10,y)))
-        y-=surface.get_height()+20
+        surface = render(HOLD_STYLE,text)
+        screen.blit(surface, surface.get_rect(bottomleft=(SCORE_POS[0],y)))
+        y-=surface.get_height()+SCORE_SPACE_PIECES
     
     
     # score_text = f"Score: {score}"
