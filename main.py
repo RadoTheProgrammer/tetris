@@ -30,7 +30,7 @@ import random
 import time
 import sys
 
-
+pygame.init()
 
 COLORS = {
     1:"blue", 
@@ -54,12 +54,14 @@ PIECES = { #x,y
     #6:((0,0),(0,1),(-1,1))
 }
 NPIECES = tuple(PIECES.keys())
+
+# design
 SCREEN_COLOR = "darkgray"
 CUBE_SIZE = 30
 GRID_CUBE_SIZE = (10,20) #x,y
 GRID_COLOR = "black"
 CUBES_LIMIT_COLOR = "white"
-GRID_POS = (0,0) #x,y
+GRID_POS = (CUBE_SIZE*4+20,0) #x,y
 NUMBER_NEXT_PIECES = 3
 DELAY_CONTROL_H = 0.1 # to go left or right
 DELAY_CONTROL_V = 0.1 # to go down
@@ -70,8 +72,10 @@ CLEAR_LINES_POINTS = {
     3:500,
     4:800
 }
+SCORE_FONT=pygame.font.Font(None, 24)
+HOLD_FONT=pygame.font.Font(None, 24)
 LINES_CLEARED_BY_LEVEL = 10
-
+X_GRID_RIGHT = GRID_CUBE_SIZE[0]*CUBE_SIZE+GRID_POS[0]
 debug_mode = hasattr(sys, 'gettrace') and sys.gettrace()
 #print(sys.gettrace())
 printd = print if debug_mode else lambda *x, **y:None
@@ -89,7 +93,7 @@ def update_speed_moving():
     #speed_moving = 0.5
     
 def new_piece(setup_cpiece_id=True):
-    global cpiece_id, cpiece_pos, cpiece_cubes, grid, holded_used, score, lines_cleared_total, level, level_old
+    global cpiece_id, cpiece_pos, cpiece_cubes, grid, holded_used, score, lines, level, level_old
     
     #clear lines
     lines_cleared_piece = 0
@@ -103,8 +107,8 @@ def new_piece(setup_cpiece_id=True):
             pass
     
     #lines_cleared_level+=lines_cleared_piece
-    lines_cleared_total+=lines_cleared_piece
-    level = lines_cleared_total//LINES_CLEARED_BY_LEVEL + 1
+    lines+=lines_cleared_piece
+    level = lines//LINES_CLEARED_BY_LEVEL + 1
     if level != level_old: # that means level up
         level_old = level
         printd("LEVEL UP")
@@ -203,9 +207,9 @@ for piece_id, color in COLORS.items():
         
     
 
-pygame.init()
 
-screen = pygame.display.set_mode((GRID_CUBE_SIZE[0]*CUBE_SIZE+100,GRID_CUBE_SIZE[1]*CUBE_SIZE))
+screen_size = ((GRID_CUBE_SIZE[0]+8)*CUBE_SIZE+40,GRID_CUBE_SIZE[1]*CUBE_SIZE)
+screen = pygame.display.set_mode(screen_size)
 clock = pygame.time.Clock()
 
 pygame.mixer.init()
@@ -224,7 +228,7 @@ next_time_moving_v = 0
 moving_h = 0
 moving_v = 0
 holded_piece = 0
-lines_cleared_total = 0
+lines = 0
 level_old = 0
 
 new_piece()
@@ -327,21 +331,50 @@ while running:
                 cube_surface = cube_surfaces[piece_id]
                 screen.blit(cube_surface, (CUBE_SIZE*x+GRID_POS[0], CUBE_SIZE*y+GRID_POS[1]))
                 
-    score_text = f"Score: {score}"
-    score_surface = pygame.font.Font(None, 24).render(score_text, True, "white")
-    score_rect = score_surface.get_rect(topleft=(CUBE_SIZE*GRID_CUBE_SIZE[0],0))
-    screen.blit(score_surface, score_rect)
+    surface_next = pygame.font.Font(None,24).render("Next",True,"white")
+    y=10
+    screen.blit(surface_next,(X_GRID_RIGHT+10,y))
+    y+=surface_next.get_height()+20
+    for next_piece in next_pieces:
+        piece_surface=pieces_surfaces[next_piece]
+        screen.blit(piece_surface, (X_GRID_RIGHT+10,y))
+        y+=piece_surface.get_height()+20
+        
+    surface_hold = HOLD_FONT.render("Hold",True,"white")
+    y=10
+    screen.blit(surface_hold, (10,y))
+    if holded_piece:
+        y+=surface_hold.get_height()+20
+        piece_surface=pieces_surfaces[holded_piece]
+        screen.blit(piece_surface,(10,y))
+        y+=piece_surface.get_height()+20
     
-    level_text = f"Level: {level}"
-    level_surface = pygame.font.Font(None, 24).render(level_text, True, "white")
-    level_rect = level_surface.get_rect(topleft=(CUBE_SIZE*GRID_CUBE_SIZE[0],50))
-    screen.blit(level_surface, level_rect)
+    y=screen_size[1]-10
+    for text in (
+        f"Level: {level}",
+        f"Lines: {lines}",
+        f"Score: {score}",
+    ):
+        surface = SCORE_FONT.render(text,True,"white")
+        screen.blit(surface, surface.get_rect(bottomleft=(10,y)))
+        y-=surface.get_height()+20
     
-    lines_surface = pygame.font.Font(None, 24).render(f"Lines cleared: {lines_cleared_total}", True, "white")
-    lines_rect = lines_surface.get_rect(topleft=(CUBE_SIZE*GRID_CUBE_SIZE[0],100))
-    screen.blit(lines_surface, lines_rect)
     
-    screen.blit(pieces_surfaces[2],(0,0))
+    # score_text = f"Score: {score}"
+    # score_surface = pygame.font.Font(None, 24).render(score_text, True, "white")
+    # score_rect = score_surface.get_rect(topleft=(CUBE_SIZE*GRID_CUBE_SIZE[0],0))
+    # screen.blit(score_surface, score_rect)
+    
+    # level_text = f"Level: {level}"
+    # level_surface = pygame.font.Font(None, 24).render(level_text, True, "white")
+    # level_rect = level_surface.get_rect(topleft=(CUBE_SIZE*GRID_CUBE_SIZE[0],50))
+    # screen.blit(level_surface, level_rect)
+    
+    # lines_surface = pygame.font.Font(None, 24).render(f"Lines cleared: {lines_cleared_total}", True, "white")
+    # lines_rect = lines_surface.get_rect(topleft=(CUBE_SIZE*GRID_CUBE_SIZE[0],100))
+    # screen.blit(lines_surface, lines_rect)
+
+    #screen.blit(pieces_surfaces[2],(0,0))
     # SHOW NEXT PIECES
     # for piece in next_pieces:
     #     piece_surface = 
