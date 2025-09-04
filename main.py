@@ -67,6 +67,7 @@ CLEAR_LINES_POINTS = {
     4:800
 }
 LINES_CLEARED_BY_LEVEL = 10
+START_LEVEL = 1
 
 # DESIGN SETTINGS
 CUBE_SIZE = 30
@@ -104,7 +105,8 @@ def flip_coords(x,y):
 def update_speed_moving():
     global speed_moving
     if level<=10:
-        speed_moving = 1-0.1*(level-1)
+        #speed_moving = 1-0.1*(level-1)
+        speed_moving = 0.5-0.05*(level-1)
     else:
         speed_moving = 0.05
     #speed_moving = 0.5
@@ -125,7 +127,7 @@ def new_piece(setup_cpiece_id=True):
     
     #lines_cleared_level+=lines_cleared_piece
     lines+=lines_cleared_piece
-    level = lines//LINES_CLEARED_BY_LEVEL + 1
+    level = lines//LINES_CLEARED_BY_LEVEL + START_LEVEL
     if level != level_old: # that means level up
         level_old = level
         printd("LEVEL UP")
