@@ -67,7 +67,7 @@ CLEAR_LINES_POINTS = {
     4:800
 }
 LINES_CLEARED_BY_LEVEL = 10
-START_LEVEL = 1
+START_LEVEL = 10
 
 # DESIGN SETTINGS
 CUBE_SIZE = 30
@@ -94,7 +94,7 @@ HOLD_STYLE=pygame.font.Font(None, 24),True,"white"
 ##
 
 debug_mode = hasattr(sys, 'gettrace') and sys.gettrace()
-#print(sys.gettrace())
+print(sys.gettrace())
 printd = print if debug_mode else lambda *x, **y:None
 def render(style,text):
     return style[0].render(text, *style[1:])
@@ -132,7 +132,7 @@ def new_piece(setup_cpiece_id=True):
         level_old = level
         printd("LEVEL UP")
         update_speed_moving()
-    score += CLEAR_LINES_POINTS[lines_cleared_piece]
+    score += CLEAR_LINES_POINTS[lines_cleared_piece] * level
     
     if setup_cpiece_id:
         cpiece_id = next_pieces.pop(0)
@@ -144,7 +144,6 @@ def new_piece(setup_cpiece_id=True):
     #print("w")  
     while True:
         
-        print(cpiece_pos[1])
 
         r = add_cpiece_to_grid()
         if r: # successful
