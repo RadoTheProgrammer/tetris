@@ -144,16 +144,19 @@ def new_piece(setup_cpiece_id=True):
     #print("w")  
     while True:
         
+        print(cpiece_pos[1])
 
-        try: 
-        #print(r)
-            if add_cpiece_to_grid(): # successful
-                return
-            else: # conflicts or piece too much up, re-check for up
-                cpiece_pos[1]+=1
+        r = add_cpiece_to_grid()
+        if r: # successful
+            return
+        elif r==0: # game over
+            print("GAME OVER")
+            global game_over
+            game_over = True
+            return
+        else:
+            cpiece_pos[1]+=1
 
-        except IndexError: # game over, verified until piece down
-            print("game over")
     
 
 def add_cpiece_to_grid():
@@ -164,10 +167,13 @@ def add_cpiece_to_grid():
 
         printd("condition", 0<=cube_pos[0])
         printd("hello", cube_pos[0])
-        if not (0<=cube_pos[0]<GRID_CUBE_SIZE[0] and 0<=cube_pos[1]<GRID_CUBE_SIZE[1]): # verif if it cross limits
-            return False
+
         # if not 0<=cube_pos[0]<10:
         #     cpiece_pos[0] -= moving_h #cancel the move
+        if cube_pos[1]>=GRID_CUBE_SIZE[1]: # verif if it cross limits
+            return 0 # game over
+        if not (0<=cube_pos[0]<GRID_CUBE_SIZE[0] and 0<=cube_pos[1]): # verif if it cross limits
+            return False 
         if grid_w_cpiece_cache[flip_coords(*cube_pos)]: # conflicts ?
             return False
         grid_w_cpiece_cache[flip_coords(*cube_pos)] = cpiece_id
@@ -250,7 +256,7 @@ moving_v = 0
 holded_piece = 0
 lines = 0
 level_old = 0
-
+game_over = False
 new_piece()
 next_time_moving += speed_moving
 #adjust_cpiece_pos()
@@ -271,7 +277,7 @@ for x in range(GRID_CUBE_SIZE[0]):
         (x*CUBE_SIZE,0),
         (x*CUBE_SIZE,GRID_CUBE_SIZE[1]*CUBE_SIZE),
         1)
-while running:
+while running and not game_over:
     screen.fill(SCREEN_COLOR)
     screen.blit(grid_surface,GRID_POS)
     
@@ -411,6 +417,14 @@ while running:
     #print("showed?")
     pygame.display.flip()
     
-            
+while game_over:
+    for event in pygame.event.get():
+        #printd(event)
+        if event.type == pygame.QUIT:
+            game_over=False
+    surface = pygame.font.Font(None, 100).render("GAME OVER", True, "white")
+    screen.blit(surface, surface.get_rect(center=(SCREEN_SIZE[0]//2, SCREEN_SIZE[1]//2)))
+    clock.tick(60) # fps
+    pygame.display.flip()
 pygame.mixer.music.stop()
 pygame.quit()
